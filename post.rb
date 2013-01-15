@@ -27,20 +27,27 @@ end
 if today.wday == 1
   start_date = Time.parse(today.day.to_s + "/" + today.month.to_s + "/" + today.year.to_s)
   events = GCal4Ruby::Event.find(serv, "", 'start-min' => start_date.utc.xmlschema, 'start-max' => (start_date + 3600*24*7).utc.xmlschema)
-  header = "Events for this week: "
-  hipchat.rooms_message(ENV['HIPCHAT_ROOM_NUMBER'], ENV['HIPCHAT_BOT_ALIAS'], header, notify = 0, color = ENV['HIPCHAT_MSG_COLOR'], message_format = 'html')
-  events.each do |event|
-    write_event(event, hipchat)
-  end
-elsif events.kind_of? Array and events.count > 0
-  start_date = Time.parse(today.day.to_s + "/" + today.month.to_s + "/" + today.year.to_s)
-  events = GCal4Ruby::Event.find(serv, "", 'start-min' => start_date.utc.xmlschema, 'start-max' => (start_date + 3600*24).utc.xmlschema)
-  header = "Events for this day: "
-  hipchat.rooms_message(ENV['HIPCHAT_ROOM_NUMBER'], ENV['HIPCHAT_BOT_ALIAS'], header, notify = 0, color = ENV['HIPCHAT_MSG_COLOR'], message_format = 'html')
-  events.each do |event|
-     write_event(event, hipchat)
+  if events.count > 0
+      header = "Events for this week: "
+    hipchat.rooms_message(ENV['HIPCHAT_ROOM_NUMBER'], ENV['HIPCHAT_BOT_ALIAS'], header, notify = 0, color = ENV['HIPCHAT_MSG_COLOR'], message_format = 'html')
+    events.each do |event|
+      write_event(event, hipchat)
+    end
+  else
+    str = "There are no significant events this week."
+    hipchat.rooms_message(ENV['HIPCHAT_ROOM_NUMBER'], ENV['HIPCHAT_BOT_ALIAS'], str, notify = 0, color = ENV['HIPCHAT_MSG_COLOR'], message_format = 'html')
   end
 else
-  str = "There are no significant events today."
-  hipchat.rooms_message(ENV['HIPCHAT_ROOM_NUMBER'], ENV['HIPCHAT_BOT_ALIAS'], str, notify = 0, color = ENV['HIPCHAT_MSG_COLOR'], message_format = 'html')
+  start_date = Time.parse(today.day.to_s + "/" + today.month.to_s + "/" + today.year.to_s)
+  events = GCal4Ruby::Event.find(serv, "", 'start-min' => start_date.utc.xmlschema, 'start-max' => (start_date + 3600*24).utc.xmlschema)
+  if events.count > 0
+    header = "Events for this day: "
+    hipchat.rooms_message(ENV['HIPCHAT_ROOM_NUMBER'], ENV['HIPCHAT_BOT_ALIAS'], header, notify = 0, color = ENV['HIPCHAT_MSG_COLOR'], message_format = 'html')
+    events.each do |event|
+      write_event(event, hipchat)
+    end
+  else
+    str = "There are no significant events today."
+    hipchat.rooms_message(ENV['HIPCHAT_ROOM_NUMBER'], ENV['HIPCHAT_BOT_ALIAS'], str, notify = 0, color = ENV['HIPCHAT_MSG_COLOR'], message_format = 'html')
+  end
 end
